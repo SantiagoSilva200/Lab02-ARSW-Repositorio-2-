@@ -59,7 +59,7 @@ public class Snake extends Observable implements Runnable {
                 if (hasTurbo == true) {
                     Thread.sleep(500 / 3);
                 } else {
-                    Thread.sleep(500);
+                    Thread.sleep(100);
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -72,31 +72,33 @@ public class Snake extends Observable implements Runnable {
         
     }
 
-    private void snakeCalc() {
+    private synchronized void snakeCalc() {
         head = snakeBody.peekFirst();
 
         newCell = head;
 
         newCell = changeDirection(newCell);
-        
+
         randomMovement(newCell);
 
         checkIfFood(newCell);
         checkIfJumpPad(newCell);
         checkIfTurboBoost(newCell);
         checkIfBarrier(newCell);
-        
-        snakeBody.push(newCell);
 
-        if (growing <= 0) {
-            newCell = snakeBody.peekLast();
-            snakeBody.remove(snakeBody.peekLast());
-            Board.gameboard[newCell.getX()][newCell.getY()].freeCell();
-        } else if (growing != 0) {
-            growing--;
+        synchronized(snakeBody) {
+            snakeBody.push(newCell);
+
+            if (growing <= 0) {
+                newCell = snakeBody.peekLast();
+                snakeBody.remove(snakeBody.peekLast());
+                Board.gameboard[newCell.getX()][newCell.getY()].freeCell();
+            } else if (growing != 0) {
+                growing--;
+            }
         }
-
     }
+
 
     private void checkIfBarrier(Cell newCell) {
         if (Board.gameboard[newCell.getX()][newCell.getY()].isBarrier()) {

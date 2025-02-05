@@ -22,6 +22,7 @@ public class Board extends JLabel implements Observer {
 	public static final int NR_JUMP_PADS = 2;
 	public static final int NR_TURBO_BOOSTS = 2;
 	public static final int NR_FOOD = 5;
+	private static final Object lock = new Object();
 	static Cell[] food = new Cell[NR_FOOD];
 	static Cell[] barriers = new Cell[NR_BARRIERS];
 	static Cell[] jump_pads = new Cell[NR_JUMP_PADS];
@@ -42,7 +43,7 @@ public class Board extends JLabel implements Observer {
 		GenerateTurboBoosts();
 	}
 
-	private void GenerateTurboBoosts() {
+	private synchronized void GenerateTurboBoosts() {
 		for (int i = 0; i != NR_TURBO_BOOSTS; i++) {
 			Cell tmp = gameboard[random.nextInt(GridSize.GRID_WIDTH)][random
 					.nextInt(GridSize.GRID_HEIGHT)];
@@ -55,7 +56,7 @@ public class Board extends JLabel implements Observer {
 		}
 	}
 
-	private void GenerateJumpPads() {
+	private synchronized void GenerateJumpPads() {
 		for (int i = 0; i != NR_JUMP_PADS; i++) {
 			Cell tmp = gameboard[random.nextInt(GridSize.GRID_WIDTH)][random
 					.nextInt(GridSize.GRID_HEIGHT)];
@@ -68,7 +69,7 @@ public class Board extends JLabel implements Observer {
 		}
 	}
 
-	private void GenerateBoard() {
+	private synchronized void GenerateBoard() {
 		for (int i = 0; i != GridSize.GRID_WIDTH; i++) {
 			for (int j = 0; j != GridSize.GRID_HEIGHT; j++) {
 				gameboard[i][j] = new Cell(i, j);
@@ -78,7 +79,7 @@ public class Board extends JLabel implements Observer {
 
 	}
 
-	private void GenerateBarriers() {
+	private synchronized void GenerateBarriers() {
 		for (int i = 0; i != NR_BARRIERS; i++) {
 			Cell tmp = gameboard[random.nextInt(GridSize.GRID_WIDTH)][random
 					.nextInt(GridSize.GRID_HEIGHT)];
@@ -91,7 +92,7 @@ public class Board extends JLabel implements Observer {
 		}
 	}
 
-	private void GenerateFood() {
+	private synchronized void GenerateFood() {
 		for (int i = 0; i != NR_FOOD; i++) {
 			Cell tmp = gameboard[random.nextInt(GridSize.GRID_WIDTH)][random
 					.nextInt(GridSize.GRID_HEIGHT)];

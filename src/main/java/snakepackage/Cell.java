@@ -49,7 +49,10 @@ public class Cell {
 	 *
 	 * @param turbo_boost � novo turbo-boost
 	 */
-	public void setTurbo_boost(boolean turbo_boost) {
+
+	//Sincronizacion para SetTurbo_boost
+	public synchronized void setTurbo_boost(boolean turbo_boost) {
+
 		this.turbo_boost = turbo_boost;
 	}
 
@@ -67,7 +70,9 @@ public class Cell {
 	 *
 	 * @param food � a nova comida
 	 */
-	public void setFood(boolean food) {
+	//Sincronizacion para SetFood
+	public synchronized void setFood(boolean food) {
+
 		this.food = food;
 	}
 
@@ -85,7 +90,10 @@ public class Cell {
 	 *
 	 * @param jump_pad � o novo salto-ao-eixo
 	 */
-	public void setJump_pad(boolean jump_pad) {
+
+	//Sincronizacion para SetJump_pad
+	public synchronized void setJump_pad(boolean jump_pad) {
+
 		this.jump_pad = jump_pad;
 	}
 
@@ -150,7 +158,10 @@ public class Cell {
 	 *
 	 * @param full
 	 */
-	public void setFull(boolean full) {
+
+	//Sincronizacion para Setfull
+	public synchronized void setFull(boolean full) {
+
 		this.full = full;
 	}
 
@@ -176,19 +187,19 @@ public class Cell {
 	 *
 	 * @return true, 
 	 */
-	public boolean hasElements() {
-		if (this.full == true ||  this.food == true
-				|| this.jump_pad == true) {
-			return true;
-		}
-		return false;
+	public synchronized boolean hasElements() {
+
+		return full || food || jump_pad || turbo_boost || barrier;
+
 	}
 
 	public boolean isBarrier() {
 		return barrier;
 	}
 
-	public void setBarrier(boolean barrier) {
+	//Sincronizacion para SetBarrier
+	public synchronized void setBarrier(boolean barrier) {
+
 		this.barrier = barrier;
 	}
 
