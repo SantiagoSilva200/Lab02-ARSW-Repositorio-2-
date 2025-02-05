@@ -1,0 +1,33 @@
+RESPUESTAS.txt
+
+1. Posibles condiciones de carrera
+
+Existen varias situaciones donde pueden ocurrir condiciones de carrera debido al acceso concurrente a recursos compartidos sin la debida sincronización:
+
+- Acceso concurrente a Cell:  Los métodos setFood(), setJump_pad(), setTurbo_boost(), y setBarrier() no están sincronizados. Si varias serpientes intentan modificar una misma celda simultáneamente, pueden producirse inconsistencias en los estados de las celdas.
+- Modificación de arreglos compartidos: Las listas `Board.food` y `Board.barriers` son modificadas por múltiples hilos sin exclusión mutua. Esto puede provocar errores como elementos duplicados o índices inválidos.
+- Actualización del tablero gráfico (`gameboard`): Cuando varias serpientes intentan moverse a la misma celda al mismo tiempo, pueden sobrescribirse entre sí. Esto podría llevar a estados inconsistentes donde la interfaz gráfica no refleja correctamente la posición real de las serpientes.
+
+2. Uso inadecuado de colecciones
+
+El uso de estructuras no seguras para hilos puede generar errores durante la ejecución concurrente del juego:
+
+-Arreglos no sincronizados: `Board.food`, `Board.barriers` y otras listas compartidas se modifican desde múltiples hilos sin control. Esto puede generar errores cuando dos hilos intentan acceder al mismo índice al mismo tiempo.
+- LinkedList en `Snake.snakeBody`: El cuerpo de la serpiente se maneja con una `LinkedList`, lo que puede causar excepciones `ConcurrentModificationException` si un hilo la modifica mientras otro la recorre para dibujarla.
+
+Para hacer la prueba de ir aumentando el juego, hasta que se generara un error, en la clase Snake, mas especificamente en el metodo run(), decidimos modificar la linea de
+codigo de 'Thread.sleep(100);' e ir reduciendo estos tiempos, cuando pusimos 30, el juego avanzaba mas rapido, sin emabego, no habian errores, pero cuando lo pusimos en 25 se generaba el error "Exception in thread "AWT-EventQueue-0" java.util.". Esto sucede porque : 
+
+	Estamos iterando sobre una LinkedList mientras otro hilo la está modificando. Como la LinkedList no es sincronizada, si un hilo está recorriéndola con un Iterator y otro la cambia (agrega o elimina elementos), el iterador se da cuenta y lanza el error.
+
+3. Uso innecesario de esperas activas
+
+Existen partes del código donde se consumen recursos de CPU de manera innecesaria:
+
+- Generación de elementos en el tablero (`GenerateFood()`): Si la celda aleatoria seleccionada ya está ocupada, el código simplemente resta `i--` y repite la búsqueda, lo que puede hacer que el juego quede atrapado en un bucle de búsqueda si el tablero está muy lleno.
+- Movimiento aleatorio en `randomMovement()`:  Dentro de changeDirection(), si no hay direcciones válidas para moverse, el bucle puede quedarse atrapado intentando encontrar una dirección disponible, causando un consumo innecesario de CPU.
+
+
+
+
+
