@@ -1,4 +1,6 @@
 
+## Hecho por Santiago Córdoba y Santiago Silva
+
 ## Respuestas Ejercicio SnakeRace
 
 1. Uso de Hilos en el Código
@@ -13,7 +15,7 @@ En el método run(), hay un bucle while (!snakeEnd) que mantiene el hilo activo 
 
 Dentro de run(), se llama a snakeCalc() para calcular el siguiente movimiento y luego se usa Thread.sleep(500) para hacer pausas entre movimientos.
 
-### Clase SnakeApp 
+### Clase SnakeApp
 
 Aquí se crean y manejan los hilos.
 
@@ -25,15 +27,15 @@ Se usa thread[i].start() para iniciar cada hilo y permitir que las serpientes se
 
 Para evitar que varias serpientes ocupen la misma celda a la vez, en Cell se usa synchronized en algunos métodos como freeCell().
 
-2. Prueba error: 
+2. Prueba error:
 
-![Prueba de error, segunda pregunta](error.png)
+![error](error.png)
 
-3. 
+3.
 
-Para solucionar las condiciones de carrera que planteamos anteriormente, hicimos unos cambios en el codigo anteriormente presentado: 
+Para solucionar las condiciones de carrera que planteamos anteriormente, hicimos unos cambios en el codigo anteriormente presentado:
 
-'En Board' 
+'En Board'
 
  ```yaml 
 
@@ -48,18 +50,18 @@ private synchronized void GenerateFood()
  ```
 
 En estos metodos no tenían ninguna protección para evitar condiciones de carrera. Esto significaba que múltiples hilos podían modificar los arreglos turbo_boosts, jump_pads, barriers, y food de manera simultánea.
-En la actualizacion, hemos agregado "synchronized" a estos métodos, lo que asegura que solo un hilo pueda ejecutar cada uno de estos métodos en un momento dado. 
+En la actualizacion, hemos agregado "synchronized" a estos métodos, lo que asegura que solo un hilo pueda ejecutar cada uno de estos métodos en un momento dado.
 Esto elimina la posibilidad de que varios hilos intenten modificar las mismas celdas en el tablero al mismo tiempo, evitando problemas como la sobrescritura o el acceso a datos corruptos.
 
 
-'En Cell' 
+'En Cell'
 
-Añadimos nuevamente (synchronized) en todos los métodos que usen interacciones simultaneas (setBarrier, hasElements,setFull,setJump_pad,setFood,setTurbo_boost) para garantizar que el acceso a estos métodos se gestione correctamente 
+Añadimos nuevamente (synchronized) en todos los métodos que usen interacciones simultaneas (setBarrier, hasElements,setFull,setJump_pad,setFood,setTurbo_boost) para garantizar que el acceso a estos métodos se gestione correctamente
 en entornos multihilo, evitando asi condiciones de carrera.
 
-'En Snake' 
+'En Snake'
 
-En esta clase, cambiamos el metodo snakeCalc, asi: 
+En esta clase, cambiamos el metodo snakeCalc, asi:
 
  ```yaml 
   private synchronized void snakeCalc() {
@@ -90,6 +92,6 @@ En esta clase, cambiamos el metodo snakeCalc, asi:
     }
 ```
 
-Agregamos esta linea (synchronized(snakeBody)), esto permite que como el objeto snakeBody, que contiene el cuerpo de la serpiente, es una lista compartida entre los hilos. 
+Agregamos esta linea (synchronized(snakeBody)), esto permite que como el objeto snakeBody, que contiene el cuerpo de la serpiente, es una lista compartida entre los hilos.
 Si dos hilos intentaran modificar esta lista al mismo tiempo, podría causar condiciones de carrera.
 Al usar synchronized(snakeBody), se asegura que solo un hilo acceda al cuerpo de la serpiente a la vez. Esto ayuda a mantener la integridad de los datos, asegurando que las modificaciones en snakeBody se realicen de forma segura y sin interferencias de otros hilos.
