@@ -1,71 +1,95 @@
-### Escuela Colombiana de Ingeniería
-## Arquitecturas de Software - ARSW
 
-#### Laboratorio - Programación concurrente, condiciones de carrera, esquemas de sincronización, colecciones sincronizadas y concurrentes.
+## Respuestas Ejercicio SnakeRace
 
-Ejercicio inividual o en parejas.
+1. Uso de Hilos en el Código
 
-### Part I
+El juego usa hilos para que cada serpiente se mueva de manera autónoma e independiente. Esto se puede observar en el uso de hilos en las siguientes clases:
+
+### Clase Snake:
+
+Implementa Runnable, lo que permite que cada serpiente se ejecute en un hilo separado.
+
+En el método run(), hay un bucle while (!snakeEnd) que mantiene el hilo activo mientras la serpiente no haya chocado.
+
+Dentro de run(), se llama a snakeCalc() para calcular el siguiente movimiento y luego se usa Thread.sleep(500) para hacer pausas entre movimientos.
+
+### Clase SnakeApp
+
+Aquí se crean y manejan los hilos.
+
+Se inicializan las serpientes y se crean los hilos con new Thread(snakes[i]).
+
+Se usa thread[i].start() para iniciar cada hilo y permitir que las serpientes se muevan al mismo tiempo.
+
+### Sincronización en el Tablero (Board y Cell)
+
+Para evitar que varias serpientes ocupen la misma celda a la vez, en Cell se usa synchronized en algunos métodos como freeCell().
+
+2. Prueba error:
+
+![error](error.png)
+
+3.
+
+Para solucionar las condiciones de carrera que planteamos anteriormente, hicimos unos cambios en el codigo anteriormente presentado:
+
+'En Board'
+
+ ```yaml 
+
+private synchronized void GenerateTurboBoosts() 
+		
+private synchronized void GenerateBoard() 
+		
+private synchronized void GenerateBarriers() 
+		
+private synchronized void GenerateFood() 
+
+ ```
+
+En estos metodos no tenían ninguna protección para evitar condiciones de carrera. Esto significaba que múltiples hilos podían modificar los arreglos turbo_boosts, jump_pads, barriers, y food de manera simultánea.
+En la actualizacion, hemos agregado "synchronized" a estos métodos, lo que asegura que solo un hilo pueda ejecutar cada uno de estos métodos en un momento dado.
+Esto elimina la posibilidad de que varios hilos intenten modificar las mismas celdas en el tablero al mismo tiempo, evitando problemas como la sobrescritura o el acceso a datos corruptos.
 
 
-Parte I – Antes de terminar la clase.
+'En Cell'
 
-Control de hilos con [wait/notify.](http://howtodoinjava.com/core-java/multi-threading/how-to-work-with-wait-notify-and-notifyall-in-java/)
+Añadimos nuevamente (synchronized) en todos los métodos que usen interacciones simultaneas (setBarrier, hasElements,setFull,setJump_pad,setFood,setTurbo_boost) para garantizar que el acceso a estos métodos se gestione correctamente
+en entornos multihilo, evitando asi condiciones de carrera.
 
-1.  Descargue el proyecto
-    [*PrimeFinder*](https://github.com/ARSW-ECI/wait-notify-excercise).
-    Este es un programa que calcula números primos entre 0 y M
-    (Control.MAXVALUE), concurrentemente, distribuyendo la búsqueda de
-    los mismos entre n (Control.NTHREADS) hilos independientes.
+'En Snake'
 
-2.  Se necesita modificar la aplicación de manera que cada t
-    milisegundos de ejecución de los threads, se detengan todos los
-    hilos y se muestre el número de primos encontrados hasta el momento.
-    Luego, se debe esperar a que el usuario presione ENTER para reanudar
-    la ejecución de los mismos. Utilice los mecanismos de sincronización
-    provistos por el lenguaje (wait y notify, notifyAll).
+En esta clase, cambiamos el metodo snakeCalc, asi:
 
-Tenga en cuenta:
+ ```yaml 
+  private synchronized void snakeCalc() {
+        head = snakeBody.peekFirst();
 
--   La construcción synchronized se utiliza para obtener acceso exclusivo a un objeto.
+        newCell = head;
 
--   La instrucción A.wait() ejecutada en un hilo B pone en modo suspendido al hilo B (independientemente de qué objeto 'A' sea usado como 'lock'). Para reanudarlo, otro hilo activo puede reanudar a B haciendo 'notify()' al objeto usado como 'lock' (es decir, A).
+        newCell = changeDirection(newCell);
 
--   La instrucción notify(), despierta el primer hilo que hizo wait()
-    sobre el objeto.
+        randomMovement(newCell);
 
--   La instrucción notifyAll(), despierta todos los hilos que estan
-    esperando por el objeto (hicieron wait()sobre el objeto).
+        checkIfFood(newCell);
+        checkIfJumpPad(newCell);
+        checkIfTurboBoost(newCell);
+        checkIfBarrier(newCell);
 
+        synchronized(snakeBody) {
+            snakeBody.push(newCell);
 
-### Parte II
+            if (growing <= 0) {
+                newCell = snakeBody.peekLast();
+                snakeBody.remove(snakeBody.peekLast());
+                Board.gameboard[newCell.getX()][newCell.getY()].freeCell();
+            } else if (growing != 0) {
+                growing--;
+            }
+        }
+    }
+```
 
-SnakeRace es una versión autónoma, multi-serpiente del famoso juego 'snake', basado en el proyecto de João Andrade -este ejercicio es un 'fork' del mismo-. En este juego:
-	
-- N serpientes funcionan de manera autónoma.
-- No existe el concepto de colisión entre las mismas. La única forma de que mueran es estrellándose contra un muro.
-- Hay ratones distribuídos a lo largo del juego. Como en el juego clásico, cada vez que una serpiente se come a un ratón, ésta crece.
-- Existen unos puntos (flechas rojas) que teletransportan a las serpientes.
-- Los rayos hacen que la serpiente aumente su velocidad.
-
-![](img/sshot.png)
-
-Ejercicio
-
-1. Analice el código para entender cómo hace uso de hilos para crear un comportamiento autónomo de las N serpientes.
-
-2. De acuerdo con lo anterior, y con la lógica del juego, identifique y escriba claramente (archivo RESPUESTAS.txt):
-    - Posibles condiciones de carrera.
-    - Uso inadecuado de colecciones, considerando su manejo concurrente (para esto, aumente la velocidad del juego y ejecútelo varias veces hasta que se genere un error).
-    - Uso innecesario de esperas activas.
-
-2. Identifique las regiones críticas asociadas a las condiciones de carrera, y haga algo para eliminarlas. Tenga en cuenta que se debe sincronizar estríctamente LO NECESARIO. En su documento de respuestas indique, la solución realizada para cada ítem del punto 2. Igualmente tenga en cuenta que en los siguientes puntos NO se deben agregar más posibles condiciones de carrera.
-
-3. Como se puede observar, el juego está incompleto. Haga los ajustes necesarios para que a través de botones en la interfaz se pueda Iniciar/Pausar/Reanudar el juego: iniciar el juego no se ha iniciado aún, suspender el juego si está en ejecución, reactivar el juego si está suspendido. Para esto tenga en cuenta:
-    * Al pausar (suspender) el juego, en alguna parte de la interfaz (agregue los componentes que desee) se debe mostrar:
-        - La serpiente viva más larga.
-        - La peor serpiente: la que primero murió.
-    
-        Recuerde que la suspensión de las serpientes NO es instantánea, y que se debe garantizar que se muestre información consistente.
-    
-
+Agregamos esta linea (synchronized(snakeBody)), esto permite que como el objeto snakeBody, que contiene el cuerpo de la serpiente, es una lista compartida entre los hilos.
+Si dos hilos intentaran modificar esta lista al mismo tiempo, podría causar condiciones de carrera.
+Al usar synchronized(snakeBody), se asegura que solo un hilo acceda al cuerpo de la serpiente a la vez. Esto ayuda a mantener la integridad de los datos, asegurando que las modificaciones en snakeBody se realicen de forma segura y sin interferencias de otros hilos.

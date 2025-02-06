@@ -26,6 +26,8 @@ public class Snake extends Observable implements Runnable {
     private boolean isSelected = false;
     private int growing = 0;
     public boolean goal = false;
+    private long deadTime = 0;
+    private boolean paused = false;
 
     public Snake(int idt, Cell head, int direction) {
         this.idt = idt;
@@ -48,15 +50,22 @@ public class Snake extends Observable implements Runnable {
     @Override
     public void run() {
         while (!snakeEnd) {
-            
-            snakeCalc();
+            synchronized (this) {
+                while (paused) {
+                    try {
+                        wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
 
-            //NOTIFY CHANGES TO GUI
+            snakeCalc();
             setChanged();
             notifyObservers();
 
             try {
-                if (hasTurbo == true) {
+                if (hasTurbo) {
                     Thread.sleep(500 / 3);
                 } else {
                     Thread.sleep(100);
@@ -64,12 +73,9 @@ public class Snake extends Observable implements Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
         }
-        
+
         fixDirection(head);
-        
-        
     }
 
     private synchronized void snakeCalc() {
@@ -106,6 +112,7 @@ public class Snake extends Observable implements Runnable {
             System.out.println("[" + idt + "] " + "CRASHED AGAINST BARRIER "
                     + newCell.toString());
             snakeEnd=true;
+            setDeadTime();
         }
     }
 
@@ -344,5 +351,30 @@ public class Snake extends Observable implements Runnable {
     public int getIdt() {
         return idt;
     }
+
+    public int getBodyLength() {
+        return snakeBody.size();
+    }
+
+    public void setDeadTime() {
+        if (deadTime == 0) {
+            deadTime = System.currentTimeMillis();
+        }
+    }
+
+    public long getDeadTime() {
+        return deadTime;
+    }
+
+    public synchronized void pause() {
+        paused = true;
+    }
+
+    public synchronized void resume() {
+        paused = false;
+        notifyAll();
+    }
+
+
 
 }
