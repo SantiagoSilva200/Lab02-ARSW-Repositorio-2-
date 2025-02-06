@@ -1,4 +1,6 @@
 
+## Hecho por Santiago Córdoba y Santiago Silva
+
 ## Respuestas Ejercicio SnakeRace
 
 1. Uso de Hilos en el Código
